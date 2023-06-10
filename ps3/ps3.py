@@ -96,17 +96,30 @@ def get_word_score(word, n):
     n: int >= 0
     returns: int >= 0
     """
-    letters = [*word.lower()]
-    first_component = 0
 
-    for l in letters:
-        first_component += SCRABBLE_LETTER_VALUES[l]
+    letter_points = 0
+    for letter in word.lower():
+        if letter != "*":
+            letter_points += SCRABBLE_LETTER_VALUES.get(letter)
+        else:
+            letter_points += 0
 
-    second_component = 7 * len(letters) - 3 * (n - len(letters))
-    if second_component < 1:
-        second_component = 1
-
-    return first_component * second_component
+    if 7 * len(word) - 3 * (n - len(word)) > 1:
+        return letter_points * (7 * len(word) - 3 * (n - len(word)))
+    else:
+        return letter_points
+    # letters = [*word.lower()]
+    # first_component = 0
+    #
+    # for l in letters:
+    #     if l != "*":
+    #         first_component += SCRABBLE_LETTER_VALUES[l]
+    #
+    # second_component = 7 * len(letters) - 3 * (n - len(letters))
+    # if second_component < 1:
+    #     second_component = 1
+    #
+    # return first_component * second_component
 
 
 #
@@ -152,13 +165,18 @@ def deal_hand(n):
     hand = {}
     num_vowels = int(math.ceil(n / 3))
 
-    for i in range(num_vowels):
-        x = random.choice(VOWELS)
-        hand[x] = hand.get(x, 0) + 1
+    for i in range(num_vowels - 1):
+        if i == 0:
+            x = "*"
+        else:
+            x = random.choice(VOWELS)
+            hand[x] = hand.get(x, 0) + 1
 
     for i in range(num_vowels, n):
         x = random.choice(CONSONANTS)
         hand[x] = hand.get(x, 0) + 1
+
+    hand['*'] = 1
 
     return hand
 
@@ -184,16 +202,23 @@ def update_hand(hand, word):
     hand: dictionary (string -> int)    
     returns: dictionary (string -> int)
     """
+    hand_copy = hand.copy()
+    for letter in word.lower():
+        try:
+            hand_copy[letter] -= 1
+            if hand_copy[letter] < 0:
+                hand_copy[letter] = 0
+        except KeyError:
+            pass
 
-    word_dict = get_frequency_dict(word.lower())
-    new_hand = hand.copy()
-    for letter in word_dict:
-        times = word_dict[letter.lower()]
-        new_hand[letter.lower()] -= times
-
-    return new_hand
-
-
+    return hand_copy
+    # hand_copy = hand.copy()
+    # for letter in word.lower():
+    #     hand_copy[letter] -= 1
+    #     if hand_copy[letter] < 0:
+    #         hand_copy[letter] = 0
+    #
+    # return hand_copy
 #
 # Problem #3: Test word validity
 #
@@ -209,19 +234,40 @@ def is_valid_word(word, hand, word_list):
     returns: boolean
     """
 
-    if word.lower() not in word_list:
-        return False
+    is_valid = True
+    wildcard_word_possibilities = []
 
-    word_dict = get_frequency_dict(word.lower())
-    for letter in word_dict:
-        times = word_dict[letter.lower()]
-        if hand.get(letter.lower()) is None:
-            return False
-        else:
-            if hand[letter.lower()] < times:
-                return False
+    for letter in word.lower():
+        try:
+            if hand[letter] < word.lower().count(letter):
+                is_valid = False
+        except KeyError:
+            is_valid = False
 
-    return True
+    if "*" in word.lower():
+        for vowel in VOWELS:
+            wildcard_word_possibilities.append(word.replace("*", vowel).lower())
+
+        for word in wildcard_word_possibilities[:]:
+            if word not in word_list:
+                wildcard_word_possibilities.remove(word)
+        if len(wildcard_word_possibilities) == 0:
+            is_valid = False
+
+    else:
+        if word.lower() not in word_list:
+            is_valid = False
+
+    return is_valid
+    # word_dict = get_frequency_dict(word.lower())
+    # for letter in word_dict:
+    #     times = word_dict[letter.lower()]
+    #     if hand.get(letter.lower()) is None:
+    #         return False
+    #     else:
+    #         if hand[letter.lower()] < times:
+    #             return False
+
 
 #
 # Problem #5: Playing a hand
@@ -234,7 +280,11 @@ def calculate_handlen(hand):
     returns: integer
     """
 
-    pass  # TO DO... Remove this line when you implement this function
+    hand_length = 0
+    for key in hand:
+        hand_length += hand[key]
+
+    return hand_length
 
 
 def play_hand(hand, word_list):
@@ -267,6 +317,27 @@ def play_hand(hand, word_list):
       
     """
 
+    total_score = 0
+    word = ""
+
+    while calculate_handlen(hand) > 0:
+        word = input("Enter word, or (!!) to indicate that you are finished. ")
+        if word == "!!":
+            break
+        else:
+            if is_valid_word(word, hand, word_list):
+                total_score += get_word_score(word, calculate_handlen(hand))
+                print(word, "earned", get_word_score(word, calculate_handlen(hand)), "points. Total:", total_score, "points.")
+            else:
+                print("That is not a valid word. Please choose another word.")
+            hand = update_hand(hand, word)
+            print("Current hand:", display_hand(hand))
+    if calculate_handlen(hand) > 0:
+        print("Total score for this hand:", total_score, "points.")
+    else:
+        print("Ran out of letters. Total socre for this hand:", total_score, "points.")
+
+    return total_score
     # BEGIN PSEUDOCODE <-- Remove this comment when you implement this function
     # Keep track of the total score
 
