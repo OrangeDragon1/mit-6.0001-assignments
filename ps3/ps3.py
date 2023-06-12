@@ -401,7 +401,26 @@ def substitute_hand(hand, letter):
     returns: dictionary (string -> int)
     """
 
-    pass  # TO DO... Remove this line when you implement this function
+    hand_copy = hand.copy()
+    count = 0
+    possible_letters = list(VOWELS + CONSONANTS)
+    new_letter = ""
+
+    for key in hand:
+        if key == letter:
+            count = hand_copy[letter]
+    del(hand_copy[letter])
+
+    for letter in possible_letters[:]:
+        if letter in hand:
+            possible_letters.remove(letter)
+
+    new_letter = random.choice(possible_letters)
+    hand_copy[new_letter] = count
+    return hand_copy
+
+
+
 
 
 def play_game(word_list):
@@ -434,8 +453,29 @@ def play_game(word_list):
 
     word_list: list of lowercase strings
     """
+    number_of_hands = int(input("Enter total number of hands: "))
+    game_score = 0
+    has_substituted = False
+    current_hand = deal_hand(HAND_SIZE)
 
-    print("play_game not implemented.")  # TO DO... Remove this line when you implement this function
+    while number_of_hands > 0:
+        print("Current hand: ", display_hand(current_hand))
+        if not has_substituted:
+            if input("Would you like to substitute a letter? ").lower() == "yes":
+                has_substituted = True
+                current_hand = substitute_hand(current_hand, input("Which letter would you like to replace? "))
+                print(display_hand(current_hand))
+
+        game_score += play_game(current_hand, load_words())
+        print("----------")
+        number_of_hands -= 1
+
+        if number_of_hands > 0:
+            if input("Would you like to replay the hand? ").lower() != "yes":
+                current_hand = deal_hand(HAND_SIZE)
+
+    print("Total score over all hands: ", game_score)
+
 
 
 #
