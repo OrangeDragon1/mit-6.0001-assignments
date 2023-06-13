@@ -32,7 +32,7 @@ def get_permutations(sequence):
     Returns: a list of all permutations of sequence
 
     Example:
-    >>> get_permutations('abc')
+    # >>> get_permutations('abc')
     ['abc', 'acb', 'bac', 'bca', 'cab', 'cba']
 
     Note: depending on your implementation, you may return the permutations in
@@ -55,4 +55,17 @@ if __name__ == '__main__':
     # to be three characters or fewer as you will have n! permutations for a
     # sequence of length n)
 
-    pass  # delete this line and replace with your code here
+    example_input_1 = 'abc'
+    print('Input:', example_input_1)
+    print('Expected Output:', ['abc', 'acb', 'bac', 'bca', 'cab', 'cba'])
+    print('Actual Output:', sorted(get_permutations(example_input_1)))
+
+    example_input_2 = 'cdl'
+    print('Input:', example_input_2)
+    print('Expected Output:', ['cdl', 'cld', 'dcl', 'dlc', 'lcd', 'ldc'])
+    print('Actual Output:', sorted(get_permutations(example_input_2)))
+
+    example_input_3 = 'nba'
+    print('Input:', example_input_3)
+    print('Expected Output:', ['abn', 'anb', 'ban', 'bna', 'nab', 'nba'])
+    print('Actual Output:', sorted(get_permutations(example_input_3)))
