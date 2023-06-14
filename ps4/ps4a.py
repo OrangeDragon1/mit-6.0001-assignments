@@ -19,6 +19,13 @@ def insert_in_all_positions(char, word_list):  # ["bc", "cb"] -> [["b", "c"], ["
     return output_lst
 
 
+def remove_dupes(perms):
+    for elem in perms[:]:
+        if perms.count(elem) > 1:
+            perms.remove(elem)
+    return perms
+
+
 def get_permutations(sequence):
     """
     Enumerate all permutations of a given string
